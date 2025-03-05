@@ -1,4 +1,5 @@
 package com.example.cashcard
 
-class CashCardRepository {
-}
+import org.springframework.data.repository.CrudRepository
+
+internal interface CashCardRepository : CrudRepository<Any?, Any?>

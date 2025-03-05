@@ -26,4 +26,20 @@ internal class CashCardJsonTest {
         assertThat(json.write(cashCard)).extractingJsonPathNumberValue("@.amount")
             .isEqualTo(123.45)
     }
+
+    @Test
+    @Throws(IOException::class)
+    fun cashCardDeserializationTest() {
+        val expected = """
+           {
+               "id":99,
+               "amount":123.45
+           }
+           
+           """.trimIndent()
+        assertThat(json!!.parse(expected))
+            .isEqualTo(CashCard(99L, 123.45))
+        assertThat(json.parseObject(expected).id).isEqualTo(99L)
+        assertThat(json.parseObject(expected).amount).isEqualTo(123.45)
+    }
 }
