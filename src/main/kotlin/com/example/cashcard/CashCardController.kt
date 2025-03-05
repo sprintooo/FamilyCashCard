@@ -1,22 +1,42 @@
 package com.example.cashcard
 
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.util.UriComponentsBuilder
+import java.net.URI
+
 
 @RestController
 @RequestMapping("/cashcards")
-class CashCardController {
+class CashCardController(
+    private val cashCardRepository: CashCardRepository
+) {
 
     @GetMapping("/{requestedId}")
     fun findById(@PathVariable requestedId: Long) : ResponseEntity<CashCard>{
-        if (requestedId == 99L) {
-            val cashCard = CashCard(99L, 123.45)
-            return ResponseEntity.ok(cashCard)
+        val cashCardOptional = cashCardRepository.findById(requestedId)
+        return if (cashCardOptional.isPresent) {
+            ResponseEntity.ok(cashCardOptional.get());
         } else {
-            return ResponseEntity.notFound().build()
+            ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping
+    private fun createCashCard(
+        @RequestBody newCashCardRequest: CashCard,
+        ucb: UriComponentsBuilder
+    ): ResponseEntity<Void> {
+        val savedCashCard = cashCardRepository.save(newCashCardRequest)
+        val locationOfNewCashCard: URI = ucb
+            .path("cashcards/{id}")
+            .buildAndExpand(savedCashCard.id)
+            .toUri()
+        return ResponseEntity.created(locationOfNewCashCard).build()
+    }
+
+    @GetMapping
+    private fun findAll(): ResponseEntity<Iterable<CashCard>> {
+        return ResponseEntity.ok(cashCardRepository.findAll())
     }
 }
